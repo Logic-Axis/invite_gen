@@ -279,15 +279,21 @@ async function refreshChannel() {
     }
 
     appendProcessLog('新しいチャンネルを作成しています...', 'info');
+    const randomName = String((Math.floor(Math.random() * 20) + 1) * 5);
+    const channelPayload = {
+      name: randomName,
+      type: channelInfo.type || 0,
+      topic: '',
+      permission_overwrites: [],
+      position: channelInfo.position
+    };
+    if (channelInfo.parent_id) {
+      channelPayload.parent_id = channelInfo.parent_id;
+    }
     res = await fetch(`https://discord.com/api/v9/guilds/${guildID}/channels`, {
       method: 'POST',
       headers: { 'Authorization': token, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: `invite-channel-${Date.now()}`,
-        type: 0,
-        topic: 'リフレッシュによって再作成されたチャンネル',
-        permission_overwrites: []
-      })
+      body: JSON.stringify(channelPayload)
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
