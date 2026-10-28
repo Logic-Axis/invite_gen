@@ -4,10 +4,10 @@
 <!----------------------------------------------------------------->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#a9ceec" />
+  <meta name="theme-color" content="#f4f6fb" />
 
   <title>招待URL生成ツール</title>
-  <meta name="description" content="" />
+  <meta name="description" content="Discord招待リンクの生成と管理を行うツールです。" />
 
   <link rel="icon" href="" />
 
@@ -15,582 +15,388 @@
   <meta property="og:type"        content="website" />
   <meta property="og:site_name"   content="Freeze" />
   <meta property="og:title"       content="招待URL生成ツール" />
-  <meta property="og:description" content="★配列の良い招待URLを目指せ★" />
+  <meta property="og:description" content="Discord招待リンクの生成と管理を行うツールです。" />
   <meta property="og:url"         content="" />
   <meta property="og:image"       content="" />
 <!----------------------------------------------------------------->
   <style>
-    /* === リセット＆ベーススタイル === */
-    * { margin:0; padding:0; box-sizing:border-box; }
+    html { overflow-y: scroll; scrollbar-gutter: stable both-edges; }
+    :root {
+      --ink: #202b3b;
+      --muted: #667386;
+      --blue: #47627d;
+      --blue-hover: #354e68;
+      --line: #dce2e9;
+      --canvas: #f3f5f7;
+      --surface: #fff;
+    }
+    * { box-sizing: border-box; }
     body {
-      font-family:'Poppins',sans-serif;
-      background:#f7f8fa;
-      color:#333;
-      min-height:100vh;
-      overflow-y:auto;
-      padding: 0 16px 30px;
+      min-height: 100vh;
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: "Yu Gothic UI", Meiryo, sans-serif;
+      font-size: 14px;
     }
-    h1 {
-      text-align:center;
-      font-size:2.2rem;
-      padding:1.5rem;
-      background:#4e73df;
-      color:#fff;
-      border-radius:12px 12px 0 0;
-      box-shadow:0 10px 30px rgba(0,0,0,0.1);
-      margin-bottom:2rem;
-      margin-top: 20px;
-    }
-
-    /* === レイアウト === */
-    .container {
-      display:flex;
-      flex-wrap:wrap;
-      justify-content:center;
-      gap:2rem;
-      padding:0 1rem 2rem;
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-
-    /* === フォーム === */
-    form {
-      background: #fafdff;
-      padding: 2rem 1.5rem 1.5rem 1.5rem;
-      border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(78,115,223,0.10), 0 1.5px 4px rgba(0,0,0,0.04);
-      width: 100%;
-      max-width: 420px;
-      position: relative;
-      border: 1.5px solid #e3eafc;
-    }
-    form label {
-      display: block;
-      font-size: 0.98rem;
-      font-weight: 600;
-      color: #3a4a7c;
-      margin-bottom: 0.3rem;
-      margin-top: 1.1rem;
-      letter-spacing: 0.01em;
-    }
-    form input {
-      width: 100%;
-      padding: 0.7rem 2.2rem 0.7rem 0.9rem;
-      border: 1.2px solid #d2d8e6;
-      border-radius: 8px;
-      background: #f5f8fd;
-      font-size: 1rem;
-      transition: border 0.2s, box-shadow 0.2s;
-      margin-bottom: 0.7rem;
-      color: #2c3e50;
-    }
-    .field-row {
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+    :focus-visible { outline: 2px solid #7d99b4; outline-offset: 2px; }
+    .app-shell { width: min(1360px, 100%); margin: 0 auto; padding: 0 28px 28px; }
+    .topbar {
+      min-height: 62px;
       display: flex;
-      align-items: stretch;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-      margin-bottom: 0.75rem;
+      align-items: center;
+      gap: 30px;
+      border-bottom: 1px solid var(--line);
     }
-    .field-row input {
-      flex: 1 1 220px;
-      margin-bottom: 0;
+    .brand { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; }
+    .brand-mark { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid #cbd5df; border-radius: 7px; color: var(--blue); background: #fff; }
+    .brand-mark svg { width: 18px; height: 18px; }
+    .brand-name { display: block; font-size: 0.9rem; font-weight: 700; }
+    .brand-caption { display: none; }
+    .main-nav { display: flex; align-items: center; gap: 5px; flex: 1; }
+    .main-nav a { padding: 8px 12px; border-radius: 6px; color: var(--muted); font-size: 0.84rem; text-decoration: none; }
+    .main-nav a:hover { color: var(--ink); background: #e9edf1; }
+    .main-nav a.active { color: var(--ink); background: #e6ebf0; font-weight: 700; }
+    .top-actions { position: relative; display: flex; align-items: center; }
+    #settingsFab { width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 7px; background: #fff; color: #576579; }
+    #settingsFab:hover { background: #f8f9fa; color: var(--ink); }
+    #settingsFab svg { width: 18px; height: 18px; }
+    .settings-panel { position: absolute; top: 42px; right: 0; z-index: 20; width: 285px; padding: 16px; border: 1px solid var(--line); border-radius: 8px; background: #fff; box-shadow: 0 8px 22px rgba(20,35,52,0.12); }
+    .settings-panel h4 { margin: 0 0 13px; font-size: 0.9rem; }
+    .settings-panel > div { display: flex; align-items: center; gap: 10px; }
+    .settings-panel label { color: #465366; font-size: 0.82rem; }
+    .settings-panel .switch { margin-left: auto; flex: 0 0 auto; }
+    .switch { position: relative; display: inline-block; width: 40px; height: 23px; }
+    .switch input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+    .switch .slider { position: absolute; inset: 0; border-radius: 20px; background: #ccd3dc; transition: background .15s; }
+    .switch .slider::before { content: ""; position: absolute; top: 3px; left: 3px; width: 17px; height: 17px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px #788391; transition: transform .15s; }
+    .switch input:checked + .slider { background: #597b99; }
+    .switch input:checked + .slider::before { transform: translateX(17px); }
+    .switch input:focus-visible + .slider { outline: 2px solid #7d99b4; outline-offset: 2px; }
+    .page-main { padding-top: 22px; }
+    .container { display: grid; grid-template-columns: minmax(320px, 390px) minmax(0, 1fr); align-items: start; gap: 16px; max-width: none; margin: 0; padding: 0; }
+    form, .log, .process-log { width: 100%; max-width: none; padding: 20px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); box-shadow: none; }
+    form { position: relative; }
+    .card-heading { display: flex; align-items: center; gap: 11px; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid #edf0f3; }
+    .step-index { width: 30px; height: 30px; display: grid; place-items: center; flex: 0 0 auto; border: 1px solid #d4dce4; border-radius: 6px; color: #50657b; background: #f6f8fa; font-size: 0.72rem; font-weight: 700; }
+    .card-heading h2 { margin: 0 0 3px; font-size: 0.98rem; }
+    .card-heading p { margin: 0; color: var(--muted); font-size: 0.78rem; }
+    form label { display: block; margin: 15px 0 6px; color: #3f4b5b; font-size: 0.82rem; font-weight: 650; }
+    form input, .invite-cleaner textarea { width: 100%; min-height: 39px; margin: 0; padding: 9px 11px; border: 1px solid #cfd7df; border-radius: 6px; outline: none; background: #fff; color: var(--ink); font-size: 0.84rem; }
+    form input:focus, .invite-cleaner textarea:focus { border-color: #708ba5; box-shadow: 0 0 0 2px rgba(89,123,153,0.12); }
+    .field-row { display: flex; flex-wrap: nowrap; gap: 7px; margin: 0; }
+    .field-row input { flex: 1 1 auto; min-width: 0; }
+    .field-help { margin: 5px 0 0; color: #7b8795; font-size: 0.73rem; line-height: 1.5; }
+    #linkCount { max-width: 130px; }
+    button.secondary-button { min-height: 34px; padding: 0 11px; border: 1px solid #cfd7df; border-radius: 6px; background: #fff; color: #46596d; font-size: 0.78rem; font-weight: 600; }
+    button.secondary-button:hover:not(:disabled) { background: #f3f6f8; border-color: #abb9c7; }
+    button.secondary-button.small-button { min-width: 118px; min-height: 39px; padding: 0 10px; border-radius: 6px; font-size: 0.76rem; }
+    button[type="submit"] { width: 100%; min-height: 41px; margin: 18px 0 7px; padding: 0 14px; border: 1px solid #3f5b75; border-radius: 6px; background: #4d6a85; color: #fff; font-size: 0.86rem; font-weight: 700; }
+    button[type="submit"]:hover:not(:disabled) { background: #3d5872; }
+    button#stopButton { width: 100%; min-height: 36px; margin: 0; padding: 0 12px; border: 1px solid #d4b8b5; border-radius: 6px; background: #fff; color: #994d47; font-size: 0.8rem; }
+    button#stopButton:hover:not(:disabled) { background: #fff8f7; }
+    .invite-cleaner { margin: 18px 0 0; padding: 15px; border: 1px solid #e4d3d1; border-radius: 7px; background: #fcf9f8; }
+    .invite-cleaner h3 { margin: 0 0 7px; color: #654945; font-size: 0.87rem; }
+    .invite-cleaner label { margin: 11px 0 6px; color: #554441; font-size: 0.78rem; }
+    .invite-cleaner textarea { min-height: 84px; margin: 0 0 7px; resize: vertical; }
+    .invite-cleaner-help { margin: 0 0 10px; color: #766966; font-size: 0.73rem; line-height: 1.55; }
+    button.danger-button { width: 100%; min-height: 37px; padding: 0 11px; border: 1px solid #c99c98; border-radius: 6px; background: #fff; color: #944b45; font-size: 0.79rem; font-weight: 650; }
+    button.danger-button:hover:not(:disabled) { background: #fff4f2; }
+    .workspace-side { display: flex; min-width: 0; flex-direction: column; gap: 16px; }
+    .process-log { min-height: 0; margin: 0; padding: 16px 18px; background: #fff; }
+    .process-log-heading { padding-bottom: 9px; border-bottom: 1px solid #e9edf1; color: #3f4c5c; font-size: 0.82rem; font-weight: 700; }
+    .process-log-list { display: flex; flex-direction: column; min-height: 48px; max-height: 116px; margin: 8px 0 0; padding: 0; overflow-y: auto; list-style: none; gap: 2px; font-size: 0.76rem; line-height: 1.45; }
+    .process-log-list li { padding: 2px; color: #536173; font-size: 0.76rem; line-height: 1.45; }
+    .process-log-list li.error { color: #a94d46; }
+    .process-log-list li.success { color: #3d755d; }
+    .process-log-list li.info { color: #667487; }
+    .log { padding: 18px; }
+    .log-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 13px; padding-bottom: 12px; border-bottom: 1px solid #e9edf1; }
+    .log-header h3 { flex: 1; margin: 0; color: #303d4d; font-size: 0.92rem; font-weight: 700; }
+    #clearLinksBtn { min-height: 31px; padding: 0 10px; color: #667386; font-size: 0.74rem; }
+    .log-content { --page-size: 8; --item-height: 45px; --item-gap: 6px; height: calc(var(--page-size) * var(--item-height) + (var(--page-size) - 1) * var(--item-gap)); overflow: hidden; }
+    .log-content ul { display: flex; flex-direction: column; gap: var(--item-gap); margin: 0; padding: 0; list-style: none; }
+    .log-content ul li { display: flex; align-items: center; min-height: var(--item-height); padding: 0 11px; border: 1px solid #e5e9ee; border-radius: 6px; background: #fff; box-shadow: none; }
+    .log-content ul li:hover { border-color: #c5d0da; background: #fafbfd; box-shadow: none; }
+    .log-content ul li a { display: block; overflow: hidden; color: #425d78; font-size: 0.8rem; font-weight: 600; text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
+    .log-content ul li a:hover { color: #294761; text-decoration: underline; }
+    .pagination-footer { margin-top: 10px; padding-top: 11px; border-top: 1px solid #e9edf1; }
+    .pagination-summary { margin-bottom: 8px; color: #7b8795; font-size: 0.73rem; }
+    .pagination { display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .pagination button { width: 38px; min-width: 38px; height: 38px; padding: 0; border: 1px solid #cfd7df; border-radius: 6px; background: #fff; color: #46596d; box-shadow: none; font-size: 0.88rem; }
+    .pagination button:hover:not(:disabled) { background: #f3f6f8; border-color: #abb9c7; }
+    .pagination button[disabled] { background: #f2f4f6; color: #98a1ad; }
+    .page-buttons { display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; padding: 0 2px; overflow: hidden; }
+    .pagination .page-buttons button { width: 36px; min-width: 36px; height: 36px; padding: 0; border-color: #dce2e9; border-radius: 6px; background: #fff; color: #586779; box-shadow: none; font-size: 0.88rem; }
+    .pagination .page-buttons button:hover:not(.active) { background: #f1f3f5; }
+    .pagination .page-buttons button.active, .pagination .page-buttons button[aria-current="page"] { border-color: #5b60b8; background: #5b60b8; color: #fff; }
+    .pagination .pagination-arrow { width:auto; min-width:64px; padding:0 12px; font-size:0.84rem; line-height:1; }
+    .app-footer { padding: 20px 0 0; color: #8b95a1; font-size: 0.72rem; text-align: center; }
+    .loader { display: none; position: fixed; inset: 0; z-index: 9999; justify-content: center; align-items: center; pointer-events: none; }
+    .loader::after { display: none; }
+    @media (max-width: 900px) {
+      .app-shell { padding: 0 18px 24px; }
+      .container { grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.2fr); gap: 12px; }
+      form, .log, .process-log { padding: 16px; }
     }
-    button.secondary-button.small-button {
-      padding: 0 1rem;
-      min-width: 120px;
+    @media (max-width: 720px) {
+      .app-shell { padding: 0 12px 20px; }
+      .topbar { min-height: 56px; flex-wrap: wrap; gap: 8px; padding: 8px 0; }
+      .brand { flex: 1; }
+      .main-nav { order: 3; width: 100%; }
+      .main-nav a { flex: 1; text-align: center; }
+      .container { grid-template-columns: 1fr; }
+      .page-main { padding-top: 17px; }
+      .field-row { flex-wrap: wrap; }
+      button.secondary-button.small-button { width: 100%; }
+      .settings-panel { width: min(285px, calc(100vw - 24px)); }
+    }
+    body { background: radial-gradient(ellipse at 84% 6%, rgba(112,99,224,0.10), transparent 28rem), #f3f4f8; }
+    .brand-mark { border-color: transparent; color: #fff; background: linear-gradient(145deg, #7068d8, #4b68bd); box-shadow: 0 4px 10px rgba(79,91,181,0.2); }
+    .main-nav a.active { color: #5148a7; background: #ecebfa; }
+    .main-nav a:hover { color: #5148a7; background: #f0effb; }
+    form, .log, .process-log { border-color: #e1e3ed; border-radius: 10px; box-shadow: 0 4px 14px rgba(34,40,74,0.045); }
+    .step-index { border: 0; color: #fff; background: linear-gradient(145deg,#7770dc,#5669c5); box-shadow: 0 4px 9px rgba(91,96,183,0.2); }
+    .step-index svg { width: 18px; height: 18px; }
+    button[type="submit"] { border: 0; background: linear-gradient(100deg,#5659bd,#6974d2); box-shadow: 0 5px 12px rgba(76,82,176,0.2); }
+    button[type="submit"]:hover:not(:disabled) { background: linear-gradient(100deg,#484ba9,#5964c3); }
+    .invite-cleaner { border-color: #eadbdc; background: linear-gradient(130deg,#fffafa,#f9f7fb); }
+    .invite-cleaner h3 { color: #644b56; }
+    button.danger-button { border-color: #d5b2b8; color: #934b5a; }
+    button.danger-button:hover:not(:disabled) { background: #fff1f3; }
+    .full-cleanup { margin-top: 14px; padding-top: 12px; border-top: 1px solid #eadfe0; }
+    .full-cleanup summary { color: #7b5257; cursor: pointer; font-size: 0.84rem; font-weight: 700; }
+    .full-cleanup p { margin: 9px 0; color: #806b6d; font-size: 0.82rem; line-height: 1.55; }
+    .full-cleanup .danger-button { background: #963f50; color: #fff; border-color: #963f50; }
+    .full-cleanup .danger-button:hover:not(:disabled) { background: #7e3443; }
+    .workspace-side { gap: 14px; }
+    .process-log-heading::before { content: ""; display: inline-block; width: 8px; height: 8px; margin: 0 8px 1px 0; border-radius: 50%; background: #7e79d2; }
+    .log-content ul li:hover { border-color: #c8c9e3; background: #fbfaff; }
+    .log-content ul li a { color: #5759ad; }
+    .pagination button { border-color: #cfd7df; background: #fff; color: #46596d; }
+    .pagination button:hover:not(:disabled) { background: #f3f6f8; }
+    body { font-size: 16px; }
+    .app-shell { width: min(1760px,100%); padding: 0 42px 38px; }
+    .topbar { min-height: 76px; gap: 38px; }
+    .brand { gap: 13px; }
+    .brand-mark { width: 42px; height: 42px; border-radius: 10px; }
+    .brand-mark svg { width: 23px; height: 23px; }
+    .brand-name { font-size: 1.02rem; }
+    .main-nav { gap: 8px; }
+    .main-nav a { padding: 11px 16px; border-radius: 8px; font-size: 0.98rem; }
+    #settingsFab { width: 42px; height: 42px; border-radius: 9px; }
+    #settingsFab svg { width: 22px; height: 22px; }
+    .settings-panel { top: 52px; width: 340px; padding: 21px; border-radius: 11px; }
+    .settings-panel h4 { font-size: 1.05rem; }
+    .settings-panel label { font-size: 0.96rem; }
+    .page-main { padding-top: 30px; }
+    .container { grid-template-columns: minmax(410px,480px) minmax(0,1fr); gap: 24px; }
+    form, .log, .process-log { padding: 28px; border-radius: 13px; }
+    .card-heading { gap: 15px; margin-bottom: 24px; padding-bottom: 19px; }
+    .step-index { width: 42px; height: 42px; border-radius: 10px; }
+    .step-index svg { width: 23px; height: 23px; }
+    .card-heading h2 { font-size: 1.18rem; }
+    .card-heading p { font-size: 0.9rem; }
+    form label { margin: 20px 0 8px; font-size: 0.96rem; }
+    form input, .invite-cleaner textarea { min-height: 50px; padding: 12px 14px; border-radius: 8px; font-size: 0.96rem; }
+    .field-row { gap: 9px; }
+    .field-help { margin-top: 7px; font-size: 0.84rem; }
+    #linkCount { max-width: 180px; }
+    button.secondary-button { min-height: 42px; padding: 0 14px; border-radius: 8px; font-size: 0.88rem; }
+    button.secondary-button.small-button { min-width: 140px; min-height: 50px; font-size: 0.86rem; }
+    button[type="submit"] { min-height: 51px; margin: 23px 0 9px; border-radius: 8px; font-size: 1rem; }
+    button#stopButton { min-height: 44px; font-size: 0.9rem; }
+    .invite-cleaner { margin-top: 24px; padding: 21px; border-radius: 10px; }
+    .invite-cleaner h3 { margin-bottom: 10px; font-size: 1.02rem; }
+    .invite-cleaner label { margin: 15px 0 8px; font-size: 0.9rem; }
+    .invite-cleaner textarea { min-height: 118px; }
+    .invite-cleaner-help { margin-bottom: 14px; font-size: 0.84rem; }
+    button.danger-button { min-height: 45px; font-size: 0.9rem; }
+    .full-cleanup { margin-top: 18px; padding-top: 16px; }
+    .full-cleanup summary { font-size: 0.95rem; }
+    .full-cleanup p { margin: 11px 0; font-size: 0.9rem; }
+    .full-cleanup .danger-button { min-height: 48px; font-size: 0.92rem; }
+    .workspace-side { gap: 22px; }
+    .process-log { padding: 21px 24px; }
+    .process-log-heading { padding-bottom: 13px; font-size: 0.98rem; }
+    .process-log-list { min-height: 72px; max-height: 165px; margin-top: 11px; gap: 4px; font-size: 0.9rem; }
+    .process-log-list li { padding: 3px; font-size: 0.9rem; line-height: 1.55; }
+    .log { padding: 25px; }
+    .log-header { gap: 16px; margin-bottom: 18px; padding-bottom: 17px; }
+    .log-header h3 { font-size: 1.15rem; }
+    #clearLinksBtn { min-height: 39px; padding: 0 14px; font-size: 0.86rem; }
+    .log-content { --item-height: 58px; --item-gap: 9px; }
+    .log-content ul li { padding: 0 15px; border-radius: 8px; }
+    .log-content ul li a { font-size: 0.94rem; }
+    .pagination-footer { margin-top: 15px; padding-top: 16px; }
+    .pagination-summary { margin-bottom: 12px; font-size: 0.86rem; }
+    .pagination { gap: 10px; }
+    .pagination button { min-height: 38px; border-radius: 8px; }
+    .pagination .pagination-arrow { width:auto; min-width:68px; padding:0 12px; }
+    .pagination .page-buttons button { width: 36px; min-width: 36px; height: 36px; border-radius: 7px; font-size: 0.88rem; }
+    .app-footer { padding-top: 26px; font-size: 0.82rem; }
+    @media (max-width: 1050px) {
+      .app-shell { padding: 0 24px 30px; }
+      .container { grid-template-columns: minmax(330px,0.9fr) minmax(0,1.1fr); gap: 16px; }
+      form, .log, .process-log { padding: 21px; }
+    }
+    @media (max-width: 800px) {
+      .app-shell { padding: 0 16px 24px; }
+      .container { grid-template-columns: 1fr; }
+      .topbar { gap: 16px; }
+    }
+    @media (max-width: 720px) {
+      .app-shell { padding: 0 12px 20px; }
+      .topbar { min-height: 62px; }
+      .field-row { flex-wrap: wrap; }
+      button.secondary-button.small-button { width: 100%; }
+      .log-content { --item-height: 52px; }
+    }
+    .brand {
+      flex: 0 0 auto;
+      font-family: "Yu Gothic UI", Meiryo, sans-serif;
+    }
+    .brand-mark { flex: 0 0 42px; }
+    .brand-name {
+      display: block;
+      font-family: "Yu Gothic UI", Meiryo, sans-serif;
+      font-size: 1.02rem;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: normal;
+      white-space: nowrap;
+    }
+    .page-title {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 0 0 24px;
+      padding: 4px 0 19px;
+      border-bottom: 1px solid #dedff0;
+    }
+    .page-title::before {
+      content: "";
+      width: 5px;
+      align-self: stretch;
       min-height: 44px;
-      height: auto;
-      font-size: 0.95rem;
-      border-radius: 12px;
-      align-self: center;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+      border-radius: 5px;
+      background: linear-gradient(180deg,#7770dc,#5b78c6);
     }
-    form input:focus {
-      border-color: #4e73df;
-      background: #fff;
-      box-shadow: 0 0 0 2px #e3eafc;
-      outline: none;
+    .page-title h1 { margin: 0 0 4px; color: #2c3152; font-size: 1.55rem; line-height: 1.3; }
+    .page-title p { margin: 0; color: #707b91; font-size: 0.94rem; }
+    .full-cleanup .confirmation-field { margin: 13px 0 10px; }
+    .full-cleanup .confirmation-field label { margin: 0 0 7px; }
+    #deleteAllConfirmation { min-height: 46px; }
+    .full-cleanup .danger-button:disabled { border-color: #d9c9cb; background: #e9dfe1; color: #967c81; box-shadow: none; }
+    @media (max-width: 720px) {
+      .page-title { margin-bottom: 17px; padding-bottom: 14px; }
+      .page-title h1 { font-size: 1.38rem; }
+      .brand { flex: 1 1 auto; }
     }
-    #toggleTokenButton {
-      display:block;
-      width:auto;
-      padding:0.6rem 1rem;
-      background:#f1f1f1;
-      border:1px solid #ddd;
-      border-radius:5px;
-      font-size:0.9rem;
-      cursor:pointer;
-      margin-bottom:1.5rem;
-    }
-    #toggleTokenButton:hover { background:#ddd; }
-
-    /* 作成ボタン */
-    button[type="submit"] {
-      width: 100%;
-      padding: 0.85rem;
-      background: linear-gradient(90deg, #4e73df 60%, #6bb6ff 100%);
-      color: #fff;
-      border: none;
-      border-radius: 12px;
-      font-size: 1.08rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.2s, box-shadow 0.2s;
-      margin-bottom: 0.7rem;
-      box-shadow: 0 2px 8px rgba(78,115,223,0.08);
-      letter-spacing: 0.01em;
-    }
-    button[type="submit"]:not(:disabled):hover {
-      background: linear-gradient(90deg, #375a8c 60%, #4e73df 100%);
-      box-shadow: 0 4px 16px rgba(78,115,223,0.13);
-    }
-    button.secondary-button {
-      padding: 0.55rem 0.9rem;
-      background: transparent;
-      color: #4e73df;
-      border: 1px solid rgba(78,115,223,0.22);
-      border-radius: 999px;
-      font-size: 0.95rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.2s, border-color 0.2s;
-      white-space: nowrap;
-      min-height: 36px;
-      align-self: center;
-    }
-    button.secondary-button:hover:not(:disabled) {
-      background: rgba(78,115,223,0.08);
-      border-color: rgba(78,115,223,0.4);
-    }
-
-    /* 停止ボタン：赤色に */
-    button#stopButton {
-      width: 100%;
-      padding: 0.85rem;
-      background: linear-gradient(90deg, #e74c3c 60%, #ffb6b6 100%);
-      color: #fff;
-      border: none;
-      border-radius: 12px;
-      font-size: 1.08rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.2s, box-shadow 0.2s;
-      margin-bottom: 0.7rem;
-      box-shadow: 0 2px 8px rgba(231,76,60,0.08);
-      letter-spacing: 0.01em;
-    }
-    button#stopButton:not(:disabled):hover {
-      background: linear-gradient(90deg, #c0392b 60%, #e74c3c 100%);
-      box-shadow: 0 4px 16px rgba(231,76,60,0.13);
-    }
-
-    /* 無効化時のスタイル */
-    button:disabled {
-      background:#ccc !important;
-      cursor:not-allowed !important;
-      transform:none !important;
-    }
-
-    /* === 進行状況ログ === */
-    .process-log {
-      background: #f5f7ff;
-      padding: 1rem 1rem 1rem 1rem;
-      border-radius: 16px;
-      box-shadow: inset 0 0 0 1px rgba(78,115,223,0.12);
-      width: 100%;
-      max-width: none;
-      font-size: 0.95rem;
-      color: #2c3e50;
-      min-height: 180px;
-      border: none;
-      margin-top: 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.65em;
-    }
-    .process-log-heading {
-      font-size: 0.96rem;
-      font-weight: 700;
-      color: #2f4f8b;
-      margin: 0;
-      padding-bottom: 0.35rem;
-      border-bottom: 1px solid rgba(78,115,223,0.18);
-    }
-    .process-log-list {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 0.15em;
-      max-height: 160px;
-      min-height: 120px;
-      overflow-y: auto;
-      font-size: 0.95rem;
-      line-height: 1.3;
-    }
-    .process-log-list li {
-      background: transparent;
-      border: none;
-      border-radius: 0;
-      padding: 0.15em 0.55em;
-      color: #223a66;
-      font-size: 0.95rem;
-      display: block;
-      word-break: break-word;
-      transition: none;
-      position: relative;
-      min-height: auto;
-      line-height: 1.35;
-    }
-    .process-log-list li.error {
-      color: #c0392b;
-    }
-    .process-log-list li.success {
-      color: #2c3e50;
-    }
-    .process-log-list li.info {
-      color: #3a4a7c;
-    }
-
-    /* === 生成リンク一覧 === */
-    .log {
-      background: #fafdff;
-      padding: 1.2rem 1.2rem 1.2rem 1.2rem;
-      border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(78,115,223,0.10), 0 1.5px 4px rgba(0,0,0,0.04);
-      width: 100%;
-      max-width: 420px;
-      overflow: visible;
-      position: relative;
-      border: 1.5px solid #e3eafc;
-    }
-    .log-header {
-      margin-bottom:1rem;
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-    .log-header h3 {
-      font-size: 1.13rem;
-      font-weight: 700;
-      color: #3a4a7c;
-      letter-spacing: 0.01em;
-      flex: 1;
-    }
-    .log-content {
-      /* ページ表示領域：内部でスクロールさせず、ページあたり表示件数で高さを固定する */
-      --page-size: 8; /* CSS側の既定（JSと合わせてください） */
-      --item-height: 56px; /* 1件あたりの高さ（min-heightと合わせる） */
-      --item-gap: 12px; /* li間のギャップ */
-      height: calc(var(--page-size) * var(--item-height) + (var(--page-size) - 1) * var(--item-gap));
-      overflow: hidden; /* 内部スクロールを禁止 */
-      position: relative;
-    }
-    .log-content ul {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: var(--item-gap);
-      padding: 0;
-    }
-    .log-content ul li {
-      background: #fff;
-      border: 1.2px solid #e3eafc;
-      border-radius: 7px;
-      padding: 0.7rem 0.9rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      transition: box-shadow 0.18s, border 0.18s;
-      box-shadow: 0 1.5px 6px rgba(78,115,223,0.06);
-      min-height: var(--item-height); /* 固定高さに合わせる */
-    }
-    .log-content ul li:hover {
-      box-shadow: 0 4px 16px rgba(78,115,223,0.13);
-    }
-    .log-content ul li a {
-      flex: 1;
-      font-size: 0.98rem;
-      font-weight: 600;
-      color: #2c3e50;
-      text-decoration: none;
-      word-break: break-all;
-      display: flex;
-      align-items: center;
-      gap: 0.3em;
-    }
-    .log-content ul li a:hover { text-decoration: underline; color: #4e73df; }
-    .log-content ul li .icon {
-      margin-left: 0.5rem;
-      font-size: 1.1rem;
-      color: #4e73df;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* スクロール制御ボタン / ページ切替コントロール */
-    .pagination {
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      flex-wrap: nowrap;
-      overflow: visible;
-      z-index: 10;
-    }
-    .pagination button {
-      width: 38px;
-      height: 38px;
-      padding: 0;
-      border-radius: 50%;
-      border: none;
-      cursor: pointer;
-      background: #4e73df;
-      color: white;
-      font-weight: 700;
-      transition: background 0.2s, box-shadow 0.2s;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      flex-shrink: 0;
-      transform: translateZ(0);
-      backface-visibility: hidden;
-      -webkit-font-smoothing: antialiased;
-    }
-    .pagination button:hover {
-      background: #375a8c;
-    }
-    .pagination button[disabled] {
-      background: #bfccec;
-      cursor: not-allowed;
-    }
-    .page-buttons {
-      display: flex;
-      flex-wrap: nowrap;
-      gap: 0.35rem;
-      align-items: center;
-      justify-content: flex-start;
-      padding: 0 0.2rem;
-      overflow: hidden;
-      white-space: nowrap;
-      -webkit-overflow-scrolling: touch;
-      flex: 1 1 auto;
-      min-width: 0;
-    }
-    .page-buttons::-webkit-scrollbar {
-      width: 0;
-      height: 0;
-    }
-    .page-buttons button {
-      width: 36px;
-      min-width: 36px;
-      height: 36px;
-      padding: 0;
-      border-radius: 50%;
-      background: #edf2ff;
-      color: #4e73df;
-      font-weight: 700;
-      box-shadow: inset 0 0 0 1px #d2d8e6;
-      transition: background 0.2s, box-shadow 0.2s;
-      transform: translateZ(0);
-      backface-visibility: hidden;
-      -webkit-font-smoothing: antialiased;
-    }
-    .page-buttons button:hover {
-      background: #dbe4ff;
-    }
-    .page-buttons button.active {
-      background: #4e73df;
-      color: #fff;
-      box-shadow: 0 2px 6px rgba(78,115,223,0.18);
-    }
-    .page-buttons button[aria-current="page"] {
-      background: #375a8c;
-      color: #fff;
-    }
-    .pagination-summary {
-      font-size: 0.96rem;
-      color: #4e73df;
-      font-weight: 600;
-      display: block;
-      margin-bottom: 0.75rem;
-    }
-    .pagination-footer {
-      margin-top: 1rem;
-      display: block;
-      padding-top: 0.75rem;
-      border-top: 1px solid #e3eafc;
-    }
-    .pagination-row {
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      flex-wrap: nowrap;
-    }
-
-    /* === レスポンシブ === */
-    @media (max-width:768px) {
-      h1 { font-size: 1.3rem; padding: 0.7rem; margin-top: 10px; }
-      .container { flex-direction: column; gap: 1.2rem; }
-      form, .log, .process-log { max-width: 100%; padding: 1.1rem 0.7rem; }
-      .log-header h3 { font-size: 1.01rem; }
-      button[type="submit"], button#stopButton { font-size: 0.98rem; }
-      .process-log {
-        min-height: auto;
-        max-width: 100%;
-      }
-      .pagination button,
-      .page-buttons button {
-        width: 32px;
-        height: 32px;
-      }
-    }
-
-    /* ローダー */
-    .loader {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: transparent; /* 霧をなくす */
-      z-index: 9999;
-      justify-content: center;
-      align-items: center;
-      pointer-events: none; /* クリックイベントを無効化しない */
-    }
-    .loader:after {
-      content: "";
-      width: 50px;
-      height: 50px;
-      border: 5px solid #f3f3f3;
-      border-top: 5px solid #4e73df;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      pointer-events: auto; /* スピナーはイベントを受け付ける */
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* スイッチ（トグル）スタイル */
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 46px;
-      height: 26px;
-    }
-    .switch input { display: none; }
-    .switch .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #cfd9f7;
-      transition: .2s;
-      border-radius: 26px;
-      box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);
-    }
-    .switch .slider:before {
-      position: absolute;
-      content: "";
-      height: 20px;
-      width: 20px;
-      left: 3px;
-      top: 3px;
-      background-color: #fff;
-      transition: .2s;
-      border-radius: 50%;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    }
-    .switch input:checked + .slider { background-color: #4e73df; }
-    .switch input:checked + .slider:before { transform: translateX(20px); }
-
   </style>
 </head>
 
 <body>
-  <h1>Discord 招待リンク生成ツール</h1>
-
-  <div class="container">
-        <!-- 設定パネル（右下フローティング） -->
-        <button id="settingsFab" title="設定" style="position:fixed;bottom:32px;right:32px;z-index:10001;width:56px;height:56px;border-radius:50%;background:transparent;color:#666;border:none;box-shadow:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:2rem;transition:background 0.2s;">
-          <!-- ユーザー提供のSVGをインラインで貼り付け -->
-          <svg viewBox="0 0 512 512" width="2em" height="2em" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-            <path fill="currentColor" d="M497.569,215.169l-55.341-13.064c-4.037-13.955-9.495-27.277-16.376-39.735l29.844-48.304
-                c4.57-7.395,3.45-16.945-2.688-23.084l-31.992-31.991c-6.128-6.129-15.67-7.248-23.073-2.68l-48.286,29.854
-                c-12.468-6.881-25.789-12.348-39.734-16.376l-13.064-55.368c-2-8.44-9.551-14.422-18.23-14.422h-45.24
-                c-8.679,0-16.22,5.982-18.22,14.422L202.105,69.79c-13.955,4.028-27.276,9.478-39.735,16.376l-48.304-29.871
-                c-7.386-4.551-16.945-3.441-23.084,2.697L58.992,90.974c-6.129,6.137-7.248,15.706-2.689,23.082l29.863,48.313
-                c-6.881,12.458-12.349,25.78-16.367,39.716L14.422,215.15C5.982,217.169,0,224.701,0,233.389v45.231
-                c0,8.679,5.982,16.239,14.422,18.229L69.8,309.914c4.028,13.945,9.486,27.257,16.367,39.707l-29.872,48.322
-                c-4.551,7.394-3.441,16.954,2.697,23.101l31.982,31.973c6.138,6.147,15.706,7.256,23.082,2.688l48.322-29.872
-                c12.469,6.89,25.79,12.349,39.726,16.367l13.064,55.368c2,8.468,9.541,14.431,18.22,14.431h45.24c8.679,0,16.23-5.964,18.23-14.431
-                l13.064-55.368c13.936-4.018,27.258-9.477,39.708-16.367l48.313,29.863c7.403,4.57,16.945,3.45,23.092-2.688l31.982-31.992
-                c6.128-6.128,7.248-15.688,2.678-23.083l-29.863-48.304c6.899-12.45,12.349-25.771,16.377-39.716l55.368-13.065
-                c8.468-2,14.422-9.541,14.422-18.229V233.38C512,224.71,506.036,217.169,497.569,215.169z M255.995,397.319
-                c-78.001,0-141.296-63.295-141.296-141.324c0-78.038,63.296-141.324,141.296-141.324c78.03,0,141.324,63.286,141.324,141.324
-                C397.319,334.024,334.025,397.319,255.995,397.319z" />
-            <path fill="currentColor" d="M256.005,180.507c-41.671,0-75.469,33.809-75.469,75.488c0,41.68,33.798,75.488,75.469,75.488
-                c41.68,0,75.487-33.808,75.487-75.488C331.492,214.316,297.684,180.507,256.005,180.507z" />
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="index.html" aria-label="招待リンクツールのトップ">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M10 13.8a4.2 4.2 0 0 0 5.9 0l2.2-2.2a4.2 4.2 0 0 0-5.9-5.9l-1.3 1.3M14 10.2a4.2 4.2 0 0 0-5.9 0l-2.2 2.2a4.2 4.2 0 0 0 5.9 5.9l1.3-1.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </span>
+        <span class="brand-name">Discord 招待リンクツール</span>
+      </a>
+      <nav class="main-nav" aria-label="メインナビゲーション">
+        <a class="active" href="index.html" aria-current="page">生成ツール</a>
+        <a href="usage.html">使い方</a>
+      </nav>
+      <div class="top-actions">
+        <button id="settingsFab" type="button" title="設定" aria-label="設定を開く" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33h-.09a1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
-        <div id="settingsPanel" class="settings-panel" style="display:none;position:fixed;bottom:100px;right:32px;z-index:10000;background:#fafdff;padding:1.2rem 1.5rem 1.5rem 1.5rem;border-radius:16px;box-shadow:0 2px 16px rgba(78,115,223,0.18);width:320px;max-width:90vw;font-size:1.02rem;color:#4e73df;border:1.5px solid #e3eafc;">
-          <h4 style="font-size:1.08rem;font-weight:700;color:#3a4a7c;margin-bottom:0.7rem;display:flex;align-items:center;gap:0.5em;">
-            設定
-          </h4>
-          <div style="margin-bottom:1.1em;display:flex;align-items:center;gap:0.8rem;">
-            <label for="autoSaveToggle" style="font-weight:600;color:#3a4a7c;display:flex;align-items:center;gap:0.6em;cursor:pointer;">
-              <span style="font-weight:600;">生成リンクを自動保存</span>
-            </label>
-            <label class="switch" style="margin-left:auto;">
+        <div id="settingsPanel" class="settings-panel" style="display:none;" aria-label="設定">
+          <h4>表示設定</h4>
+          <div>
+            <label for="autoSaveToggle">生成リンクをこのブラウザーに保存</label>
+            <label class="switch" aria-label="生成リンクの自動保存">
               <input type="checkbox" id="autoSaveToggle">
               <span class="slider"></span>
             </label>
           </div>
         </div>
-    <!-- 設定フォーム -->
-    <form id="inviteForm">
-      <label for="tokens">トークン</label>
-      <div style="position:relative;">
-        <input type="text" id="tokens" placeholder="トークン1" style="padding-right:1.8em;">
-        <span id="toggleTokenMask" style="position:absolute;top:0.18em;right:0.18em;cursor:pointer;width:1.05em;height:1.05em;display:flex;align-items:center;justify-content:center;z-index:2;">
-          <svg id="maskIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" width="100%" height="100%">
-            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" stroke="#4e73df" stroke-width="2" fill="#fff"/>
-            <circle cx="12" cy="12" r="3" stroke="#4e73df" stroke-width="2" fill="#4e73df"/>
-            <line x1="4" y1="4" x2="20" y2="20" stroke="#e74c3c" stroke-width="2"/>
-          </svg>
-        </span>
+      </div>
+    </header>
+
+    <main class="page-main">
+      <div class="page-title">
+        <div><h1>招待リンク管理</h1><p>リンクの生成とサーバー招待の整理を行います。</p></div>
       </div>
 
-      <label for="channelID">チャンネルID</label>
-      <div class="field-row">
-        <input type="text" id="channelID" required placeholder="チャンネルIDを入力">
-        <button type="button" id="refreshButton" class="secondary-button small-button">リフレッシュ</button>
-      </div>
+      <div class="container">
+        <form id="inviteForm" class="form-card">
+          <div class="card-heading">
+            <span class="step-index" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M10 13.7a4 4 0 0 0 5.7 0l2-2a4 4 0 0 0-5.7-5.7l-1.2 1.2M14 10.3a4 4 0 0 0-5.7 0l-2 2A4 4 0 0 0 12 18l1.2-1.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+            <div><h2>リンクを作成・整理</h2><p>接続情報を入力して操作を選んでください。</p></div>
+          </div>
 
-      <label for="linkCount">生成するリンクの回数</label>
-      <input type="number" id="linkCount" value="1" min="1">
+          <label for="tokens">トークン</label>
+          <div style="position:relative;">
+            <input type="text" id="tokens" placeholder="トークンを入力" style="padding-right:2.7rem;">
+            <button id="toggleTokenMask" type="button" title="トークンの表示を切り替え" aria-label="トークンの表示を切り替え" style="position:absolute;top:8px;right:8px;width:30px;height:30px;display:grid;place-items:center;border:0;border-radius:7px;background:transparent;cursor:pointer;">
+              <svg id="maskIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" width="19" height="19">
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" stroke="#5367d8" stroke-width="2" fill="#fff"/>
+                <circle cx="12" cy="12" r="3" stroke="#5367d8" stroke-width="2" fill="#5367d8"/>
+                <line x1="4" y1="4" x2="20" y2="20" stroke="#ad4039" stroke-width="2"/>
+              </svg>
+            </button>
+          </div>
 
-      <!-- 初期状態で停止ボタンは disabled -->
-      <button type="submit" id="startButton">招待リンク生成</button>
-      <button type="button" id="stopButton" disabled>処理停止</button>
+          <label for="channelID">チャンネルID</label>
+          <div class="field-row">
+            <input type="text" id="channelID" required placeholder="招待を作成するチャンネルID">
+            <button type="button" id="refreshButton" class="secondary-button small-button">チャンネル再作成</button>
+          </div>
 
-      <div class="process-log" id="processLog">
-        <div class="process-log-heading">処理ログ</div>
-        <ul class="process-log-list" id="processLogList"></ul>
-      </div>
-    </form>
+          <label for="linkCount">生成するリンク数</label>
+          <input type="number" id="linkCount" value="1" min="1">
+
+          <button type="submit" id="startButton">招待リンクを生成</button>
+          <button type="button" id="stopButton" disabled>生成を停止</button>
+
+          <section class="invite-cleaner" aria-labelledby="inviteCleanerHeading">
+            <h3 id="inviteCleanerHeading">サーバー招待リンクの整理</h3>
+            <label for="keepInviteCodes">残す招待コード（改行で複数可能）</label>
+            <textarea id="keepInviteCodes" rows="4" aria-describedby="inviteCleanerHelp" placeholder=""></textarea>
+            <button type="button" id="cleanInvitesButton" class="danger-button">指定したリンク以外を削除</button>
+            <details class="full-cleanup">
+              <summary>サーバーの招待をすべて削除する</summary>
+              <p>安全確認として、入力欄に「全削除」と入力してください。</p>
+              <div class="confirmation-field">
+                <label for="deleteAllConfirmation">確認の文字</label>
+                <input type="text" id="deleteAllConfirmation" autocomplete="off" spellcheck="false" placeholder="全削除">
+              </div>
+              <button type="button" id="deleteAllInvitesButton" class="danger-button" disabled>すべての招待リンクを削除</button>
+            </details>
+          </section>
+        </form>
+
+        <div class="workspace-side">
+          <div class="process-log" id="processLog">
+            <div class="process-log-heading">処理ログ</div>
+            <ul class="process-log-list" id="processLogList"></ul>
+          </div>
 
     <!-- 生成されたリンク一覧 -->
     <div class="log">
-          <div class="log-header" style="gap:0.75rem;">
-            <h3>生成されたリンク</h3>
-            <button type="button" id="clearLinksBtn" class="secondary-button">全て削除</button>
-          </div>
+      <div class="log-header">
+        <h3>生成されたリンク</h3>
+        <button type="button" id="clearLinksBtn" class="secondary-button" title="表示中の生成リンク一覧だけを消去します。Discord上の招待は削除されません。">一覧をクリア</button>
+      </div>
       <div class="log-content">
         <ul id="logList"></ul>
       </div>
@@ -598,25 +404,19 @@
         <div class="pagination-summary" id="paginationSummary">表示 0 件</div>
         <div class="pagination-row">
           <div class="pagination">
-            <button type="button" id="prevPageBtn" title="前のページ">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M15 18l-6-6 6-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
-            <div id="pageButtons" class="page-buttons" aria-label="ページ番号"></div>
-            <button type="button" id="nextPageBtn" title="次のページ">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M9 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
+            <button type="button" id="prevPageBtn" class="pagination-arrow" title="前のページ" aria-label="前のページ">前へ</button>
+            <div id="pageButtons" class="page-buttons" role="group" aria-label="ページ番号"></div>
+            <button type="button" id="nextPageBtn" class="pagination-arrow" title="次のページ" aria-label="次のページ">次へ</button>
           </div>
         </div>
       </div>
     </div>
+        </div>
+      </div>
+    </main>
+    <footer class="app-footer">Discord 招待リンク管理ツール</footer>
   </div>
 
-    
-  
   <div class="loader" id="loader" style="display:none;"></div>
 
   <script src="script.js"></script>

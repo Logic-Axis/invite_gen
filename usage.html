@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#f3f4f8" />
+  <title>使い方 | Discord 招待リンクツール</title>
+  <meta name="description" content="Discord招待リンクツールの使い方を操作別に確認できます。" />
+  <style>
+    :root { --ink:#252b44; --muted:#707b91; --line:#e1e3ed; --purple:#5e5ab8; --surface:#fff; --canvas:#f3f4f8; }
+    * { box-sizing:border-box; }
+    body { min-height:100vh; margin:0; background:radial-gradient(ellipse at 82% 0,rgba(112,99,224,.10),transparent 30rem),var(--canvas); color:var(--ink); font:16px/1.6 "Yu Gothic UI",Meiryo,sans-serif; }
+    button,input,select { font:inherit; }
+    .app-shell { width:min(1760px,100%); margin:0 auto; padding:0 42px 42px; }
+    .topbar { min-height:76px; display:flex; align-items:center; gap:38px; border-bottom:1px solid var(--line); }
+    .brand { display:inline-flex; align-items:center; gap:13px; color:var(--ink); text-decoration:none; }
+    .brand-mark { width:42px; height:42px; display:grid; place-items:center; border-radius:11px; color:#fff; background:linear-gradient(145deg,#7770dc,#4b68bd); box-shadow:0 4px 10px rgba(79,91,181,.2); }
+    .brand-mark svg { width:23px; height:23px; }
+    .brand-name { font-size:1.02rem; font-weight:700; }
+    .main-nav { display:flex; align-items:center; gap:8px; flex:1; }
+    .main-nav a { padding:11px 16px; border-radius:8px; color:#68748a; text-decoration:none; }
+    .main-nav a:hover { color:#5148a7; background:#f0effb; }
+    .main-nav a.active { color:#5148a7; background:#ecebfa; font-weight:700; }
+    main { padding-top:36px; }
+    .page-heading { display:flex; align-items:center; gap:16px; margin-bottom:28px; padding-bottom:20px; border-bottom:1px solid #dedff0; }
+    .page-heading::before { content:""; width:5px; align-self:stretch; min-height:48px; border-radius:5px; background:linear-gradient(180deg,#7770dc,#5b78c6); }
+    h1 { margin:0 0 4px; color:#2c3152; font-size:1.9rem; line-height:1.3; }
+    .page-heading p { margin:0; color:var(--muted); }
+    .guide-content { margin-top:22px; }
+    .guide-card { position:relative; overflow:hidden; min-height:280px; padding:34px 40px; border:1px solid #e3e3f0; border-radius:14px; background:#fff; box-shadow:0 7px 20px rgba(34,40,74,.055); }
+    .guide-card[hidden] { display:none !important; }
+    .guide-card::before { content:""; position:absolute; inset:0 auto 0 0; width:5px; background:linear-gradient(180deg,#8b83dc,#5e79c4); }
+    .guide-card.danger::before { background:linear-gradient(180deg,#c77c8e,#a64e65); }
+    .article-heading { display:flex; align-items:center; gap:15px; margin-bottom:23px; padding-bottom:19px; border-bottom:1px solid #ececf4; }
+    .article-icon { width:48px; height:48px; display:grid; place-items:center; flex:0 0 auto; border:1px solid #e0def5; border-radius:13px; color:#605bb7; background:linear-gradient(145deg,#f4f2ff,#e9edfb); }
+    .article-icon svg { width:24px; height:24px; }
+    .danger .article-icon { border-color:#f0dadd; color:#a65b68; background:linear-gradient(145deg,#fff6f5,#f9eefa); }
+    h2 { margin:0 0 4px; color:#343957; font-size:1.4rem; }
+    .article-heading p { margin:0; color:#798398; font-size:.94rem; }
+    .article-body { max-width:1040px; }
+    .article-body p { margin:12px 0; color:#566278; font-size:1rem; line-height:1.85; }
+    .article-body h3 { margin:24px 0 7px; color:#454b69; font-size:1.05rem; }
+    .article-body ul { margin:9px 0; padding-left:1.3rem; }
+    .article-body li { margin:8px 0; padding-left:4px; color:#566278; line-height:1.8; }
+    .article-body li::marker { color:#7770c8; }
+    .callout { margin-top:18px; padding:15px 18px; border-left:4px solid #7770c8; border-radius:0 9px 9px 0; background:#f4f3fc; color:#535a7c; line-height:1.75; }
+    .callout.warning { border-left-color:#b76d78; background:#fbf2f4; color:#76545a; }
+    code { padding:3px 7px; border:1px solid #e2def0; border-radius:5px; background:#f5f3fb; color:#514c98; font-family:Consolas,"Cascadia Code",monospace; font-size:.94em; overflow-wrap:anywhere; }
+    .back-link { display:inline-flex; align-items:center; gap:8px; margin-top:20px; padding:12px 16px; border:1px solid #d7d3ef; border-radius:8px; background:#fff; color:#5148a7; font-weight:650; text-decoration:none; }
+    .back-link:hover { background:#f2f0ff; }
+    footer { padding:30px 0 0; color:#8b95a1; font-size:.82rem; text-align:center; }
+    [hidden] { display:none !important; }
+    @media (max-width:900px) { .app-shell { padding:0 24px 30px; } }
+    @media (max-width:700px) {
+      .app-shell { padding:0 14px 22px; }
+      .topbar { min-height:62px; flex-wrap:wrap; gap:8px; padding:8px 0; }
+      .brand { flex:1; }
+      .main-nav { order:3; width:100%; }
+      .main-nav a { flex:1; text-align:center; }
+      main { padding-top:22px; }
+      .page-heading { margin-bottom:18px; }
+      h1 { font-size:1.55rem; }
+      .guide-card { min-height:0; padding:24px 22px; }
+      .article-heading { gap:11px; }
+      .article-icon { width:42px; height:42px; }
+      h2 { font-size:1.2rem; }
+    }
+    /* Keep the help page quiet and readable; decoration stays in the shared brand. */
+    body { background:radial-gradient(ellipse at 84% 6%,rgba(112,99,224,.10),transparent 28rem),#f3f4f8; }
+    .app-shell { width:min(1760px,100%); padding:0 42px 38px; }
+    main { padding-top:30px; }
+    .page-heading { margin-bottom:24px; padding:4px 0 19px; border-bottom:1px solid #dedff0; }
+    .page-heading::before { display:block; width:5px; min-height:44px; border-radius:5px; background:linear-gradient(180deg,#7770dc,#5b78c6); }
+    h1 { color:#2c3152; font-size:1.55rem; }
+    .page-heading p { color:#697586; font-size:.94rem; }
+    .guide-content { margin-top:12px; }
+    .guide-card { min-height:0; padding:28px 32px; border-color:#dfe3e8; border-radius:8px; box-shadow:none; }
+    .guide-card::before { display:none; }
+    .article-heading { gap:0; margin-bottom:20px; padding-bottom:14px; border-color:#e7eaee; }
+    .article-icon { display:none; }
+    h2 { color:#2f3948; font-size:1.28rem; }
+    .article-heading p { color:#707b89; }
+    .article-body { max-width:900px; }
+    .article-body p { color:#4f5b69; font-size:.98rem; line-height:1.8; }
+    .article-body h3 { color:#354253; }
+    .callout,.callout.warning { border-left-width:3px; border-radius:0 4px 4px 0; background:#f2f4f6; color:#4e5a68; }
+    .callout.warning { border-left-color:#ac7375; background:#f8f3f3; color:#685252; }
+    .back-link { padding:0; border:0; border-radius:0; color:#46596d; text-decoration:underline; text-underline-offset:3px; }
+    .back-link:hover { background:transparent; color:#293d53; }
+    footer { color:#7b8694; }
+    @media (max-width:900px) { .app-shell { padding:0 24px 30px; } }
+    @media (max-width:700px) { .app-shell { padding:0 12px 22px; } .guide-card { padding:22px; } }
+    html { overflow-y:scroll; scrollbar-gutter:stable both-edges; }
+    .app-shell { min-height:100vh; display:flex; flex-direction:column; }
+    main { flex:1; }
+    footer { margin-top:auto; }
+    .brand { flex:0 0 auto; font-family:"Yu Gothic UI",Meiryo,sans-serif; }
+    .brand-mark { flex:0 0 42px; }
+    .brand-name { display:block; font-family:"Yu Gothic UI",Meiryo,sans-serif; font-size:1.02rem; font-weight:700; line-height:1.2; letter-spacing:normal; white-space:nowrap; }
+    .guide-layout { display:grid; grid-template-columns:280px minmax(0,1fr); align-items:start; gap:24px; }
+    .topic-nav { display:flex; flex-direction:column; gap:3px; padding:15px; border:1px solid #dfe3e8; border-radius:8px; background:#fff; }
+    .topic-nav-title { margin:0 8px 8px; padding:0 0 10px; border-bottom:1px solid #e7eaee; color:#687486; font-size:.87rem; font-weight:700; }
+    .topic-tab { display:block; width:100%; padding:11px 12px; border:1px solid transparent; border-radius:6px; background:transparent; color:#4f5b69; cursor:pointer; text-align:left; line-height:1.45; }
+    .topic-tab:hover { background:#f5f6f8; }
+    .topic-tab.active { border-color:#e1e4ea; background:#f1f3f6; color:#2f3a49; font-weight:700; }
+    .topic-tab:focus-visible { outline:2px solid #74869b; outline-offset:2px; }
+    .guide-content { min-width:0; margin:0; }
+    .guide-card { min-height:300px; }
+    @media (max-width:1100px) { .guide-layout { grid-template-columns:240px minmax(0,1fr); gap:18px; } }
+    @media (max-width:700px) {
+      .guide-layout { grid-template-columns:1fr; gap:14px; }
+      .brand { flex:1 1 auto; }
+      .topic-nav { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:5px; padding:12px; }
+      .topic-nav-title { grid-column:1/-1; }
+      .topic-tab { padding:10px; }
+      .guide-card { min-height:0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="index.html" aria-label="招待リンクツールのトップ">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M10 13.8a4.2 4.2 0 0 0 5.9 0l2.2-2.2a4.2 4.2 0 0 0-5.9-5.9l-1.3 1.3M14 10.2a4.2 4.2 0 0 0-5.9 0l-2.2 2.2a4.2 4.2 0 0 0 5.9 5.9l1.3-1.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+        <span class="brand-name">Discord 招待リンクツール</span>
+      </a>
+      <nav class="main-nav" aria-label="メインナビゲーション">
+        <a href="index.html">生成ツール</a>
+        <a class="active" href="usage.html" aria-current="page">使い方</a>
+      </nav>
+    </header>
+
+    <main>
+      <div class="page-heading">
+        <div><h1>使い方</h1><p>操作ごとの説明を確認できます。項目を選ぶと、その使い方が表示されます。</p></div>
+      </div>
+
+      <div class="guide-layout">
+        <nav class="topic-nav" role="tablist" aria-label="使い方の項目" aria-orientation="vertical">
+          <p class="topic-nav-title">操作別ガイド</p>
+          <button type="button" id="topic-prepare" class="topic-tab active" role="tab" aria-selected="true" aria-controls="guide-prepare" tabindex="0" data-topic="prepare">事前準備と権限</button>
+          <button type="button" id="topic-generate" class="topic-tab" role="tab" aria-selected="false" aria-controls="guide-generate" tabindex="-1" data-topic="generate">招待リンクを生成する</button>
+          <button type="button" id="topic-invite-cleanup" class="topic-tab" role="tab" aria-selected="false" aria-controls="guide-invite-cleanup" tabindex="-1" data-topic="invite-cleanup">招待リンクを削除する</button>
+          <button type="button" id="topic-channel" class="topic-tab" role="tab" aria-selected="false" aria-controls="guide-channel" tabindex="-1" data-topic="channel">チャンネルを再作成</button>
+          <button type="button" id="topic-storage" class="topic-tab" role="tab" aria-selected="false" aria-controls="guide-storage" tabindex="-1" data-topic="storage">生成リンクの保存と一覧</button>
+          <button type="button" id="topic-trouble" class="topic-tab" role="tab" aria-selected="false" aria-controls="guide-trouble" tabindex="-1" data-topic="trouble">エラーや困ったとき</button>
+        </nav>
+
+      <div class="guide-content" id="guideContent">
+        <article class="guide-card" id="guide-prepare" role="tabpanel" aria-labelledby="topic-prepare" data-guide="prepare">
+          <header class="article-heading"><span class="article-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 19 6v5c0 4.5-3.1 7.8-7 10-3.9-2.2-7-5.5-7-10V6l7-3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><h2>事前準備と権限</h2><p>操作を始める前に確認する内容です。</p></div></header>
+          <div class="article-body">
+            <p>生成ツールの画面で、操作に使うトークンとチャンネルIDを入力します。チャンネルIDには、招待を作成する対象のチャンネルを指定してください。</p>
+            <h3>必要なアクセス権</h3>
+            <p>管理者権限を前提に作られています</p>
+          </div>
+        </article>
+
+        <article class="guide-card" id="guide-generate" role="tabpanel" aria-labelledby="topic-generate" data-guide="generate" hidden>
+          <header class="article-heading"><span class="article-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M10 13.7a4 4 0 0 0 5.7 0l2-2a4 4 0 0 0-5.7-5.7l-1.2 1.2M14 10.3a4 4 0 0 0-5.7 0l-2 2A4 4 0 0 0 12 18l1.2-1.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><div><h2>招待リンクを生成する</h2><p>指定したチャンネルに新しい招待を作成します。</p></div></header>
+          <div class="article-body">
+            <p>トークンとチャンネルIDを入力し、「生成するリンク数」に必要な数を指定して「招待リンクを生成」を押します。</p>
+            <p>進行状況は処理ログに表示され、生成されたリンクは右側の一覧に追加されます。トークン欄の目のアイコンで表示と非表示を切り替えられます。</p>
+            <aside class="callout">処理中に止めたい場合は「生成を停止」を押してください。停止前に作成済みのリンクは一覧に残ります。</aside>
+          </div>
+        </article>
+
+        <article class="guide-card danger" id="guide-invite-cleanup" role="tabpanel" aria-labelledby="topic-invite-cleanup" data-guide="invite-cleanup" hidden>
+          <header class="article-heading"><span class="article-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V4h6v3m-9 0 1 13h10l1-13M10 11v5m4-5v5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><h2>招待リンクを削除する</h2><p>残したいリンクを指定する方法と、すべて削除する方法があります。</p></div></header>
+          <div class="article-body">
+            <h3>指定したリンク以外を削除</h3>
+            <p>生成ツールの「残す招待コード」欄に、残したい招待コードまたは招待URLを1行に1件ずつ入力し、「指定したリンク以外を削除」を押します。</p>
+
+            <h3>すべて削除</h3>
+            <p>生成ツールの「サーバーの招待をすべて削除する」を開き、確認欄に <code>全削除</code> と入力します。入力が一致すると削除ボタンが有効になります。</p>
+            <p>削除ボタンを押すと、削除予定数を含む最終確認が表示されます。内容を確認して続行すると、サーバー内の招待をすべて削除します。</p>
+            <aside class="callout warning">残したい招待がある場合は「すべて削除」を実行しないでください。</aside>
+          </div>
+        </article>
+
+        <article class="guide-card danger" id="guide-channel" role="tabpanel" aria-labelledby="topic-channel" data-guide="channel" hidden>
+          <header class="article-heading"><span class="article-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16v12H4zM8 6v12m8-12v12M4 10h16m-16 4h16" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span><div><h2>チャンネルを再作成する</h2><p>入力中のチャンネルを削除して、新しいチャンネルを作ります。</p></div></header>
+          <div class="article-body">
+            <p>チャンネルID欄の内容を確認してから「チャンネル再作成」を押します。現在のチャンネルを削除した後、新しいチャンネルを作成します。</p>
+            <p>新しいチャンネルIDは入力欄に反映されます。</p>
+            <aside class="callout warning">元のチャンネルは削除されます。チャンネル名や権限設定など必要な情報を事前に控えてください。</aside>
+          </div>
+        </article>
+
+        <article class="guide-card" id="guide-storage" role="tabpanel" aria-labelledby="topic-storage" data-guide="storage" hidden>
+          <header class="article-heading"><span class="article-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 4h14v16H5zM8 8h8M8 12h5m-5 4h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><h2>生成リンクの保存と一覧</h2><p>ブラウザーへの保存と、画面上の一覧を管理します。</p></div></header>
+          <div class="article-body">
+            <p>設定の自動保存を有効にすると、生成リンクがブラウザーに保存され、次回アクセス時に一覧を復元します。</p>
+            <p>自動保存を無効にすると、保存済みの一覧データは削除されます。すでに開いている画面の一覧はそのまま表示されます。</p>
+            <aside class="callout">「一覧をクリア」は画面に表示する生成リンクだけを消します。Discordサーバー上の招待リンクは削除しません。</aside>
+          </div>
+        </article>
+
+        <article class="guide-card" id="guide-trouble" role="tabpanel" aria-labelledby="topic-trouble" data-guide="trouble" hidden>
+          <header class="article-heading"><span class="article-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M9.7 9a2.4 2.4 0 1 1 4.2 1.6c-1.1 1.1-1.9 1.3-1.9 2.7M12 17h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><div><h2>エラーや困ったとき</h2><p>よくある原因を順に確認してください。</p></div></header>
+          <div class="article-body">
+            <h3>チャンネル情報を取得できない</h3><p>トークンが有効か、チャンネルIDに誤りがないか、チャンネルを閲覧できるかを確認します。</p>
+            <h3>招待の作成・削除に失敗する</h3><p>対象サーバーやチャンネルで必要な権限があるかを確認します。失敗した招待コードと理由は処理ログに表示されます。</p>
+            <h3>レート制限が表示される</h3><p>短時間に操作を繰り返さず、しばらく待ってから再度実行してください。</p>
+            <a class="back-link" href="index.html">生成ツールに戻る <span aria-hidden="true">→</span></a>
+          </div>
+        </article>
+      </div>
+      </div>
+    </main>
+    <footer>Discord 招待リンクツール</footer>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const tabList = document.querySelector('.topic-nav');
+      const tabs = [...document.querySelectorAll('.topic-tab')];
+      const articles = [...document.querySelectorAll('[data-guide]')];
+
+      function selectTopic(tab, moveFocus = false) {
+        const selectedTopic = tab.dataset.topic;
+        tabs.forEach(item => {
+          const selected = item === tab;
+          item.classList.toggle('active', selected);
+          item.setAttribute('aria-selected', String(selected));
+          item.tabIndex = selected ? 0 : -1;
+        });
+        articles.forEach(article => { article.hidden = article.dataset.guide !== selectedTopic; });
+        if (moveFocus) tab.focus();
+      }
+
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => selectTopic(tab));
+      });
+
+      tabList.addEventListener('keydown', function(event) {
+        const currentIndex = tabs.indexOf(document.activeElement);
+        let nextIndex = currentIndex;
+        if (event.key === 'ArrowDown' || event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % tabs.length;
+        else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+        else if (event.key === 'Home') nextIndex = 0;
+        else if (event.key === 'End') nextIndex = tabs.length - 1;
+        else return;
+        event.preventDefault();
+        selectTopic(tabs[nextIndex], true);
+      });
+    });
+  </script>
+</body>
+</html>
